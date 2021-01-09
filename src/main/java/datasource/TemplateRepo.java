@@ -3,6 +3,7 @@ package datasource;
 import model.Template;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TemplateRepo extends Repo{
 
@@ -13,7 +14,7 @@ public interface TemplateRepo extends Repo{
      * @param id
      * @return the template for with the specified id. null if nothing is found
      */
-    Template getTemplate(String guild, Long id);
+    Template getTemplate(String guild, UUID id);
 
     /**
      * Retrieves all available templates for specified guild
@@ -29,7 +30,7 @@ public interface TemplateRepo extends Repo{
      * @param guild The guild to retrieve Template ids for.
      * @return The set of ids for Templates tied to the guild. Empty list if nothing is found.
      */
-    List<Long> getIds(String guild);
+    List<UUID> getIds(String guild);
 
     /**
      * Adds a new template based on the template sentence for the specified guild

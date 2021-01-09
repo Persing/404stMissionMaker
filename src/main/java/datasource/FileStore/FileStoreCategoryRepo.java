@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 
 public class FileStoreCategoryRepo implements CategoryRepo {
     private static final Random rand = new Random();
@@ -42,14 +45,21 @@ public class FileStoreCategoryRepo implements CategoryRepo {
 
     @Override
     public void addToCategory(String guild, String category, String entry) throws IOException {
+        addToCategoryBulk(guild, category, Collections.singletonList(entry));
+    }
+
+    @Override
+    public void addToCategoryBulk(String guild, String category, List<String> entries) throws IOException {
         Path guildPath = Path.of(categoryFolderRootPath + File.separator + guild);
         Path catPath = Path.of(guildPath.toString(), category);
         if (!Files.exists(catPath)) {
             Files.createDirectories(guildPath);
             Files.createFile(catPath);
         }
+        StringBuilder builder = new StringBuilder();
+        entries.forEach(entry -> builder.append(entry).append("\n"));
         Files.writeString(catPath,
-                entry,
+                builder.toString(),
                 StandardOpenOption.APPEND);
     }
 
@@ -61,6 +71,24 @@ public class FileStoreCategoryRepo implements CategoryRepo {
             Files.createDirectories(guildPath);
             Files.createFile(catPath);
         }
+    }
+
+    public String getEntries(String guild, String category) throws IOException {
+        Path path = Path.of(categoryFolderRootPath + File.separator + guild + File.separator + category);
+        StringBuilder builder = new StringBuilder();
+        Files.lines(path).forEach(l -> builder.append(l).append("\n"));
+        return builder.toString();
+    }
+
+    @Override
+    public String getCategories(String guild) throws IOException {
+        Path root = Path.of(categoryFolderRootPath + File.separator + guild);
+        StringBuilder builder = new StringBuilder();
+        Files.walk(root, 1)
+                .filter(p -> !root.equals(p))
+                .map(Path::getFileName)
+                .forEach(cat -> builder.append(cat).append("\n"));
+        return builder.toString();
     }
 
 

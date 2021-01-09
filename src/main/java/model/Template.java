@@ -2,10 +2,11 @@ package model;
 
 import util.Utils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
-public class Template {
+public class Template implements Serializable {
     private final Long id;
     private final List<Token> sentence;
     private final UUID uuid;
@@ -42,6 +43,22 @@ public class Template {
 
     public List<Token> getSentence() {
         return sentence;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public String getSentenceString() {
+        StringBuilder builder = new StringBuilder();
+        sentence.forEach(token -> {
+            if (token.getType().equals(Token.Type.PLAIN_TEXT)) {
+                builder.append(token.getValue()).append(" ");
+            } else {
+                builder.append("[").append(token.getValue()).append("] ");
+            }
+        });
+        return builder.toString();
     }
 
     @Override

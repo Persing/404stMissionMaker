@@ -8,6 +8,7 @@ import util.Utils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public class CmdHandlerImpl implements CmdHandler {
     private final CategoryRepo categoryRepo;
@@ -20,12 +21,17 @@ public class CmdHandlerImpl implements CmdHandler {
 
     @Override
     public CmdResponse<String> addTemplate(String guild, String sentence) {
-        templateRepo.addTemplate(guild,sentence);
-        return new CmdResponse<>(sentence, 0, null);
+        int responseCode = templateRepo.addTemplate(guild,sentence);
+        if (responseCode == 0) {
+            return new CmdResponse<>(sentence, 0, null);
+        } else {
+            return new CmdResponse<>(sentence, responseCode, "Unable to persist template, it may still be " +
+                    "available, but may not be restored if the server is restarted");
+        }
     }
 
     @Override
-    public CmdResponse<Template> getTemplate(String guild, Long id) {
+    public CmdResponse<Template> getTemplate(String guild, UUID id) {
         Template t = templateRepo.getTemplate(guild, id);
         int status = 0;
         String message = null;
@@ -38,7 +44,7 @@ public class CmdHandlerImpl implements CmdHandler {
 
     @Override
     public CmdResponse<Template> getDefaultTemplate(String guild) {
-        List<Long> ids = templateRepo.getIds(guild);
+        List<UUID> ids = templateRepo.getIds(guild);
         if (ids == null || ids.isEmpty()) {
             return new CmdResponse<>(null, 404, "No templates founds");
         }
@@ -52,7 +58,7 @@ public class CmdHandlerImpl implements CmdHandler {
     }
 
     @Override
-    public CmdResponse<String> generateSentence(String guild, Long templateId) {
+    public CmdResponse<String> generateSentence(String guild, UUID templateId) {
         CmdResponse<Template> templateResponse = getTemplate(guild, templateId);
 
         if (templateResponse.status != 0) {
@@ -84,6 +90,43 @@ public class CmdHandlerImpl implements CmdHandler {
             // TODO: localize string
             return new CmdResponse<>(null, 500, "Unable to add entry {"
                     + entry + "} to category [" + category +"]");
+        }
+    }
+
+    @Override
+    public CmdResponse<String> addEntryBulk(String guild, String category, List<String> entries) {
+        try {
+            categoryRepo.addToCategoryBulk(guild, category, entries);
+            return new CmdResponse<>("Added all entries to [" + category + "]", 0, null);
+        } catch (IOException e) {
+            return new CmdResponse<>(null, 500, "Unable to add entries to category [" + category +"]");
+        }
+    }
+
+    @Override
+    public CmdResponse<String> getEntries(String guild, String category) {
+        try {
+            String reply = categoryRepo.getEntries(guild, category);
+            if (reply == null) {
+                return new CmdResponse<>(
+                        null,
+                        404,
+                        "No category [" + category + "] found. If you would like to create it then simply " +
+                                "add an entry with ADDENTRY or AE");
+            }
+            return new CmdResponse<>(reply, 0, null);
+        } catch (IOException e) {
+            return new CmdResponse<>(null, 500, "Unable to read entries");
+        }
+    }
+
+    @Override
+    public CmdResponse<String> getCategories(String guild) {
+        try {
+            String reply = categoryRepo.getCategories(guild);
+            return new CmdResponse<>(reply, 0, null);
+        } catch (IOException e) {
+            return new CmdResponse<>(null, 500, "Unable to read categories");
         }
     }
 

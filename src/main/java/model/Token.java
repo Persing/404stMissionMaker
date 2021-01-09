@@ -1,6 +1,8 @@
 package model;
 
-public class Token {
+import java.io.Serializable;
+
+public class Token implements Serializable {
     private final Type type;
     private final String value;
 
@@ -17,7 +19,7 @@ public class Token {
         return value;
     }
 
-    public enum Type {
+    public enum Type implements Serializable {
         CATEGORY, PLAIN_TEXT
     }
 
