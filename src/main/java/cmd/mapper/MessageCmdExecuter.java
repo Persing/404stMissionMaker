@@ -37,17 +37,36 @@ public class MessageCmdExecuter {
             arg = pieces[1];
         }
 
-        return switch (cmd) {
-            case "ADDTEMPLATE", "AT" -> callAddTemplate(guild, arg);
-            case "MAKE", "M" -> callMake(guild, arg);
-            case "ADDENTRY", "AE" -> callAddEntry(guild, arg);
-            case "ADDENTRYBULK", "AEB", "BULKADDENTRY", "BAE" -> callAddEntryBulk(guild, arg);
-            case "LISTTEMPLATES", "LT" -> callListTemplates(guild);
-            case "LISTENTRIES", "LE" -> callListEntries(guild, arg);
-            case "LISTCATEGORIES", "LC" -> callListCategories(guild);
-            case "HELP", "H" -> callHelp(arg);
-            default -> new CmdResponse(null, 404, "");
-        };
+        switch (cmd) {
+            case "ADDTEMPLATE":
+            case "AT":
+                return callAddTemplate(guild, arg);
+            case "MAKE":
+            case "M":
+                return callMake(guild, arg);
+            case "ADDENTRY":
+            case "AE":
+                return callAddEntry(guild, arg);
+            case "ADDENTRYBULK":
+            case "AEB":
+            case "BULKADDENTRY":
+            case "BAE":
+                return callAddEntryBulk(guild, arg);
+            case "LISTTEMPLATES":
+            case "LT":
+                return callListTemplates(guild);
+            case "LISTENTRIES":
+            case "LE":
+                return callListEntries(guild, arg);
+            case "LISTCATEGORIES":
+            case "LC":
+                return callListCategories(guild);
+            case "HELP":
+            case "H":
+                return callHelp(arg);
+            default:
+                return new CmdResponse(null, 404, "");
+        }
     }
 
     private CmdResponse<String> callMake(String guild, String args) {
@@ -111,42 +130,58 @@ public class MessageCmdExecuter {
     private CmdResponse<String> callHelp(String arg) {
         if (arg.isEmpty()) {
             return new CmdResponse<>(
-                    """
-                            The available commands are:
-                            AddTemplate (AT)
-                            AddEntry (AE)
-                            AddEntryBulk (BulkAddEntry) (AEB) (BAE)
-                            ListTemplates (LT)
-                            ListEntries (LE)
-                            ListCategories (LC)
-                                        
-                            For more information on using each command use HELP <CMD> 
-                            """, 0, null
+                    " The available commands are: \n" +
+                            "AddTemplate (AT)\n" +
+                            "AddEntry (AE)\n" +
+                            "AddEntryBulk (BulkAddEntry) (AEB) (BAE)\n" +
+                            "ListTemplates (LT)\n" +
+                            "ListEntries (LE)\n" +
+                            "ListCategories (LC)\n\n" +
+                            "For more information on using each command use HELP <CMD>",
+                    0,
+                    null
             );
         }
 
-        String msg = switch (arg.toUpperCase(Locale.ROOT)) {
-            case "ADDTEMPLATE", "AT" -> "Type your sentence after the cmd any words in [ ] will be considered a category. " +
-                    "Categories are limited to single words with no spaces.\n(IE. addtemplate [objectives] with [things] while [conditions])";
-            case "MAKE", "M" -> "Simply call this cmd and it will use the first template to build a random mission prompt. " +
-                    "support for  picking desired template coming soon!";
-            case "ADDENTRY", "AE" -> "Adds an entry to a category if the category does not exist yet it will be created. " +
-                    "simply list the category then the word you want to add to it.\n(IE. addentry objectives Convoy) " +
-                    "this will add the word \"convoy\" to the category \"objectives\"";
-            case "ADDENTRYBULK", "AEB", "BULKADDENTRY", "BAE" -> """
-                    Same as add entry but can add multiple entries at once. The entries should be new line separated.
-                    (IE. bulkaddentry testing
-                    test
-                    hello
-                    world
-                    adios
-                    mondo)
-                    """;
-            case "LISTTEMPLATES", "LT" -> "Lists the available templates";
-            case "LISTENTRIES", "LE" -> "Lists the available entries in the provided category." +
-                    "\n(IE. ListEntries objectives) This will list all entries in the category \"objectives\"";
-            case "LISTCATEGORIES", "LC" -> "Lists available categories.";
-            default -> "\"" + arg + "\" is not a recognized cmd";
+        String msg = "";
+        switch (arg.toUpperCase(Locale.ROOT)) {
+            case "ADDTEMPLATE" :
+            case "AT" :
+                msg = "Type your sentence after the cmd any words in [ ] will be considered a category. " +
+                "Categories are limited to single words with no spaces.\n(IE. addtemplate [objectives] with [things] while [conditions])";
+                break;
+            case "MAKE" :
+            case "M" : msg = "Simply call this cmd and it will use the first template to build a random mission prompt. " +
+                "support for  picking desired template coming soon!";
+                break;
+            case "ADDENTRY" :
+            case "AE" : msg = "Adds an entry to a category if the category does not exist yet it will be created. " +
+                "simply list the category then the word you want to add to it.\n(IE. addentry objectives Convoy) " +
+                "this will add the word \"convoy\" to the category \"objectives\"";
+                break;
+            case "ADDENTRYBULK" :
+            case "AEB" :
+            case "BULKADDENTRY" :
+            case "BAE" : msg =
+                "Same as add entry but can add multiple entries at once. The entries should be new line separated."+
+                "(IE. bulkaddentry testing"+
+                "test\n"+
+                "hello\n"+
+                "world\n"+
+                "adios\n"+
+                "mondo)";
+                break;
+            case "LISTTEMPLATES":
+            case "LT" : msg = "Lists the available templates";
+                break;
+            case "LISTENTRIES" :
+            case "LE" : msg = "Lists the available entries in the provided category." +
+                "\n(IE. ListEntries objectives) This will list all entries in the category \"objectives\"";
+                break;
+            case "LISTCATEGORIES" :
+            case "LC" : msg = "Lists available categories.";
+                break;
+            default : msg = "\"" + arg + "\" is not a recognized cmd";
         };
 
         return new CmdResponse<>(msg, 0, "");
