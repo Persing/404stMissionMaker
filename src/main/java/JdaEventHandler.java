@@ -129,8 +129,13 @@ public class JdaEventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        JDA jda = event.getJDA();
-        String name = event.getMember().getEffectiveName();
+
+        Long chId = configRepo.getModMailChannel(event.getGuild().getName());
+        // No mod-mail channel setup so dont send a welcome message
+        if (chId == null) {
+            return;
+        }
+
         event.getMember()
                 .getUser()
                 .openPrivateChannel()

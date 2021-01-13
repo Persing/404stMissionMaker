@@ -4,10 +4,7 @@ import datasource.CategoryRepo;
 import datasource.ConfigRepo;
 import datasource.TemplateRepo;
 import model.Template;
-import org.dizitart.no2.Cursor;
-import org.dizitart.no2.Document;
-import org.dizitart.no2.Nitrite;
-import org.dizitart.no2.NitriteCollection;
+import org.dizitart.no2.*;
 import util.Utils;
 
 import java.io.IOException;
@@ -153,21 +150,62 @@ public class NitriteDataStore implements ConfigRepo, CategoryRepo, TemplateRepo 
 
     @Override
     public String getStartFlag(String guild) {
-        return "$";
+        Cursor result = db.getCollection("Guilds").find(eq("GUILD", guild));
+
+        if (result == null || !result.hasMore()) {
+            return "$";
+        }
+
+        Document guildDoc = result.firstOrDefault();
+
+        if (guildDoc == null) {
+            return "$";
+        }
+
+        String flag = guildDoc.get("FLAG", String.class);
+
+        if (flag == null || flag.isBlank()) {
+            return "$";
+        }
+
+        return flag;
     }
 
     @Override
     public void setStartFlag(String guild, String flag) {
-
+        NitriteCollection col = db.getCollection("Guilds");
+        Document doc = col.find(eq("GUILD", guild)).firstOrDefault();
+        col.update(eq("GUILD", guild), doc != null ? doc : Document.createDocument("GUILD", guild).put("FLAG", flag));
     }
 
     @Override
     public Long getModMailChannel(String guild) {
-        return 93558188644499467L;
+        Cursor result = db.getCollection("Guilds").find(eq("GUILD", guild));
+
+        if (result == null || !result.hasMore()) {
+            return null;
+        }
+
+        Document guildDoc = result.firstOrDefault();
+
+        if (guildDoc == null) {
+            return null;
+        }
+
+        Long modMailChannelId = guildDoc.get("MOD-MAIL", Long.class);
+
+        if (modMailChannelId == null) {
+            return null;
+        }
+
+        return modMailChannelId;
+//        return 93558188644499467L;
     }
 
     @Override
     public void setModMailChannel(String guild, Long channelId) {
-
+        NitriteCollection col = db.getCollection("Guilds");
+        Document doc = col.find(eq("GUILD", guild)).firstOrDefault();
+        col.update(eq("GUILD", guild), doc != null ? doc : Document.createDocument("GUILD", guild).put("MOD-MAIL", channelId));
     }
 }
